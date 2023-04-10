@@ -13,7 +13,8 @@ export const generatePayload = (apiKey: string, messages: ChatMessage[]): Reques
   body: JSON.stringify({
     model,
     messages,
-    temperature: 0.6,
+    temperature: 0.7,
+    max_tokens: 256,
     stream: true,
   }),
 })
