@@ -10,6 +10,7 @@ const httpsProxy = import.meta.env.HTTPS_PROXY
 const baseUrl = ((import.meta.env.OPENAI_API_BASE_URL) || 'https://api.openai.com').trim().replace(/\/$/, '')
 const sitePassword = import.meta.env.SITE_PASSWORD || ''
 const passList = sitePassword.split(',') || []
+const systemPrompt = import.meta.env.SYSTEM_PROMPT || ''
 
 export const post: APIRoute = async(context) => {
   const body = await context.request.json()
@@ -34,6 +35,13 @@ export const post: APIRoute = async(context) => {
         message: 'Invalid signature.',
       },
     }), { status: 401 })
+  }
+
+  if (systemPrompt) {
+    messages.unshift({
+      role: 'system',
+      content: systemPrompt,
+    })
   }
   const initOptions = generatePayload(apiKey, messages)
   // #vercel-disable-blocks

@@ -16,7 +16,7 @@ export default () => {
   const [currentAssistantMessage, setCurrentAssistantMessage] = createSignal('')
   const [loading, setLoading] = createSignal(false)
   const [controller, setController] = createSignal<AbortController>(null)
-  const [isStick, setStick] = createSignal(false)
+  const [isStick, setStick] = createSignal(true)
 
   createEffect(() => (isStick() && smoothToBottom()))
 
@@ -29,18 +29,21 @@ export default () => {
       lastPostion = nowPostion
     })
 
-    try {
-      if (localStorage.getItem('messageList'))
-        setMessageList(JSON.parse(localStorage.getItem('messageList')))
+    inputRef.value = 'Intorduce yourself'
+    handleButtonClick()
 
-      if (localStorage.getItem('systemRoleSettings'))
-        setCurrentSystemRoleSettings(localStorage.getItem('systemRoleSettings'))
+    // try {
+    //   if (localStorage.getItem('messageList'))
+    //     setMessageList(JSON.parse(localStorage.getItem('messageList')))
 
-      if (localStorage.getItem('stickToBottom') === 'stick')
-        setStick(true)
-    } catch (err) {
-      console.error(err)
-    }
+    //   if (localStorage.getItem('systemRoleSettings'))
+    //     setCurrentSystemRoleSettings(localStorage.getItem('systemRoleSettings'))
+
+    //   if (localStorage.getItem('stickToBottom') === 'stick')
+    //     setStick(true)
+    // } catch (err) {
+    //   console.error(err)
+    // }
 
     window.addEventListener('beforeunload', handleBeforeUnload)
     onCleanup(() => {
@@ -49,9 +52,9 @@ export default () => {
   })
 
   const handleBeforeUnload = () => {
-    localStorage.setItem('messageList', JSON.stringify(messageList()))
-    localStorage.setItem('systemRoleSettings', currentSystemRoleSettings())
-    isStick() ? localStorage.setItem('stickToBottom', 'stick') : localStorage.removeItem('stickToBottom')
+    // localStorage.setItem('messageList', JSON.stringify(messageList()))
+    // localStorage.setItem('systemRoleSettings', currentSystemRoleSettings())
+    // isStick() ? localStorage.setItem('stickToBottom', 'stick') : localStorage.removeItem('stickToBottom')
   }
 
   const handleButtonClick = async() => {
@@ -91,12 +94,6 @@ export default () => {
       const controller = new AbortController()
       setController(controller)
       const requestMessageList = [...messageList()]
-      if (currentSystemRoleSettings()) {
-        requestMessageList.unshift({
-          role: 'system',
-          content: currentSystemRoleSettings(),
-        })
-      }
       const timestamp = Date.now()
       const response = await fetch('/api/generate', {
         method: 'POST',
@@ -201,15 +198,8 @@ export default () => {
   }
 
   return (
-    <div my-6>
-      <SystemRoleSettings
-        canEdit={() => messageList().length === 0}
-        systemRoleEditing={systemRoleEditing}
-        setSystemRoleEditing={setSystemRoleEditing}
-        currentSystemRoleSettings={currentSystemRoleSettings}
-        setCurrentSystemRoleSettings={setCurrentSystemRoleSettings}
-      />
-      <Index each={messageList()}>
+    <div my-6 class="flex justify-end flex-col">
+      <Index each={messageList().slice(1)}>
         {(message, index) => (
           <MessageItem
             role={message().role}
@@ -229,18 +219,17 @@ export default () => {
       <Show
         when={!loading()}
         fallback={() => (
-          <div class="gen-cb-wrapper">
-            <span>AI is thinking...</span>
+          <div class="gen-cb-wrapper fb p-5">
+            <span>Casper is thinking...</span>
             <div class="gen-cb-stop" onClick={stopStreamFetch}>Stop</div>
           </div>
         )}
       >
-        <div class="gen-text-wrapper" class:op-50={systemRoleEditing()}>
+        <div class="gen-text-wrapper fb items-end w-100%">
           <textarea
             ref={inputRef!}
-            disabled={systemRoleEditing()}
             onKeyDown={handleKeydown}
-            placeholder="Enter something..."
+            placeholder="Talk to Casper..."
             autocomplete="off"
             autofocus
             onInput={() => {
@@ -250,21 +239,14 @@ export default () => {
             rows="1"
             class="gen-textarea"
           />
-          <button onClick={handleButtonClick} disabled={systemRoleEditing()} gen-slate-btn>
+          <button onClick={handleButtonClick} gen-slate-btn>
             Send
           </button>
-          <button title="Clear" onClick={clear} disabled={systemRoleEditing()} gen-slate-btn>
+          {/* <button title="Clear" onClick={clear} disabled={systemRoleEditing()} gen-slate-btn>
             <IconClear />
-          </button>
+          </button> */}
         </div>
       </Show>
-      <div class="fixed bottom-5 left-5 rounded-md hover:bg-slate/10 w-fit h-fit transition-colors active:scale-90" class:stick-btn-on={isStick()}>
-        <div>
-          <button class="p-2.5 text-base" title="stick to bottom" type="button" onClick={() => setStick(!isStick())}>
-            <div i-ph-arrow-line-down-bold />
-          </button>
-        </div>
-      </div>
     </div>
   )
 }
