@@ -70,7 +70,7 @@ export default ({ role, message, showRetry, onRetry }: Props) => {
   }
 
   return (
-    <div class="py-2 -mx-4 px-4 transition-colors md:hover:bg-slate/3">
+    <div class="-mx-4 px-4 transition-colors md:hover:bg-slate/3">
       <div class="flex gap-3 rounded-lg" class:op-75={role === 'user'}>
         {
           role === 'assistant' ? (<div class="shrink-0 w-7 h-7 mt-4 rounded-full op-80"><IconCasper /></div>) : (<div class={`shrink-0 w-7 h-7 mt-4 rounded-full op-80 ${roleClass[role]}`} />)
